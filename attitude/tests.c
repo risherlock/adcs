@@ -1,10 +1,15 @@
 #include <stdio.h>
+
+#include "maps.h"
 #include "attitude.h"
 
 void quaternion_tests(void);
 
 int main(void)
 {
+  double e[3] = {0.1, 0.2, 0.2};
+  double m[3][3];
+  euler_to_dcm(e, EULER_321, m);
   return 0;
 }
 
