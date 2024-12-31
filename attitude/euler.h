@@ -6,20 +6,18 @@
 
 typedef enum
 {
-  EULER_121,
-  EULER_123,
-  EULER_131,
-  EULER_132,
-  EULER_212,
-  EULER_213,
-  EULER_231,
-  EULER_232,
-  EULER_312,
-  EULER_313,
-  EULER_321,
-  EULER_323
+  EULER_XYX = 121,
+  EULER_XYZ = 123,
+  EULER_XZX = 131,
+  EULER_XZY = 132,
+  EULER_YXY = 212,
+  EULER_YXZ = 213,
+  EULER_YZX = 231,
+  EULER_YZY = 232,
+  EULER_ZXY = 312,
+  EULER_ZXZ = 313,
+  EULER_ZYX = 321,
+  EULER_ZYZ = 323
 } euler_seq_t;
-
-void euler_rotate(const double e[3], const euler_seq_t es, const double v[3], double v_out[3]);
 
 #endif // euler.h

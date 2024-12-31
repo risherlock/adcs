@@ -1,5 +1,11 @@
 #include <math.h>
+#include <stdbool.h>
+#include <inttypes.h>
+
 #include "maps.h"
+
+#define M_PI_2 1.57079632679489661923
+#define M_PI 2 * 1.57079632679489661923
 
 void quat_to_dcm(const double q[4], double r[3][3])
 {
@@ -56,21 +62,89 @@ void dcm_to_quat(const double r[3][3], double q[4])
   }
 }
 
+// Quaternion to extrinsic Euler angles as described in Ref.[2].
 void quat_to_euler(const double q[4], double e[3], const euler_seq_t es)
 {
-  double q2_sq = q[2] * q[2];
-  e[0] = atan2(2.0 * (q[0] * q[1] + q[2] * q[3]), 1.0 - 2.0 * (q[1] * q[1] + q2_sq));
-  e[2] = atan2(2.0 * (q[0] * q[3] + q[1] * q[2]), 1.0 - 2.0 * (q2_sq + q[3] * q[3]));
+  const double tolerance = 1e-7;
 
-  double sin_e1 = 2.0 * (q[0] * q[2] - q[1] * q[3]);
+  // Parse Euler sequence
+  int i = (es / 100) % 10;
+  int j = (es / 10) % 10;
+  int k = es % 10;
 
-  if (fabs(sin_e1) >= 1.0)
+  // Is it a proper Euler sequence?
+  bool not_proper = true;
+
+  if (i == k)
   {
-    e[1] = copysign(M_PI_2, sin_e1);
+    k = 6 - i - j;
+    not_proper = false;
+  }
+
+  // Is permutation even or odd?
+  int epsilon = -(i - j) * (j - k) * (k - i) / 2.0f;
+  double a, b, c, d;
+
+  if (not_proper)
+  {
+    a = q[0] - q[j];
+    b = q[i] + q[k] * epsilon;
+    c = q[j] + q[0];
+    d = q[k] * epsilon - q[i];
   }
   else
   {
-    e[1] = asin(sin_e1);
+    a = q[0];
+    b = q[i];
+    c = q[j];
+    d = q[k] * epsilon;
+  }
+
+  const double a_sq = a * a;
+  const double b_sq = b * b;
+  const double c_sq = c * c;
+  const double d_sq = d * d;
+  const double hyp_ab = a_sq + b_sq;
+  const double hyp_cd = c_sq + d_sq;
+
+  e[1] = acos(2.0 * ((hyp_ab) / (hyp_ab + hyp_cd)) - 1.0);
+  double theta_plus = atan2(b, a);
+  double theta_minus = atan2(d, c);
+
+  // Check singularity
+  if (fabs(e[1]) < tolerance)
+  {
+    e[0] = 0.0f;
+    e[2] = 2 * theta_plus;
+  }
+  else if (fabs(fabs(e[1]) - M_PI_2) < tolerance)
+  {
+    e[0] = 0.0f;
+    e[2] = 2 * theta_plus;
+  }
+  else // Safe
+  {
+    e[0] = theta_plus - theta_minus;
+    e[2] = theta_plus + theta_minus;
+  }
+
+  if (not_proper)
+  {
+    e[1] -= M_PI_2;
+    e[2] *= epsilon;
+  }
+
+  // Normalize to [-pi, pi]
+  for (uint8_t i = 0; i < 3; i++)
+  {
+    if (e[i] < -M_PI)
+    {
+      e[i] += 2.0 * M_PI;
+    }
+    else if (e[i] > M_PI)
+    {
+      e[i] -= 2 * M_PI;
+    }
   }
 }
 
@@ -84,7 +158,7 @@ void euler_to_quat(const double e[3], const euler_seq_t es, double q[3])
 
   switch (es)
   {
-  case EULER_123:
+  case EULER_XYZ:
   {
     q[0] = c[0] * c[1] * c[2] - s[0] * s[1] * s[2];
     q[1] = s[0] * c[1] * c[2] + c[0] * s[1] * s[2];
@@ -93,7 +167,7 @@ void euler_to_quat(const double e[3], const euler_seq_t es, double q[3])
     break;
   }
 
-  case EULER_132:
+  case EULER_XZY:
   {
     q[0] = c[0] * c[1] * c[2] + s[0] * s[1] * s[2];
     q[1] = s[0] * c[1] * c[2] - c[0] * s[1] * s[2];
@@ -102,7 +176,7 @@ void euler_to_quat(const double e[3], const euler_seq_t es, double q[3])
     break;
   }
 
-  case EULER_121:
+  case EULER_XYX:
   {
     q[0] = ch * cos(h[0] + h[2]);
     q[1] = ch * sin(h[0] + h[2]);
@@ -111,7 +185,7 @@ void euler_to_quat(const double e[3], const euler_seq_t es, double q[3])
     break;
   }
 
-  case EULER_131:
+  case EULER_XZX:
   {
     q[0] = ch * cos(h[0] + h[2]);
     q[1] = ch * sin(h[0] + h[2]);
@@ -120,7 +194,7 @@ void euler_to_quat(const double e[3], const euler_seq_t es, double q[3])
     break;
   }
 
-  case EULER_213:
+  case EULER_YXZ:
   {
     q[0] = c[0] * c[1] * c[2] + s[0] * s[1] * s[2];
     q[1] = c[0] * s[1] * c[2] + s[0] * c[1] * s[2];
@@ -129,7 +203,7 @@ void euler_to_quat(const double e[3], const euler_seq_t es, double q[3])
     break;
   }
 
-  case EULER_231:
+  case EULER_YZX:
   {
     q[0] = c[0] * c[1] * c[2] - s[0] * s[1] * s[2];
     q[1] = c[0] * c[1] * s[2] + s[0] * s[1] * c[2];
@@ -138,7 +212,7 @@ void euler_to_quat(const double e[3], const euler_seq_t es, double q[3])
     break;
   }
 
-  case EULER_212:
+  case EULER_YXY:
   {
     q[0] = ch * cos(h[0] + h[2]);
     q[1] = sh * cos(-h[0] + h[2]);
@@ -147,7 +221,7 @@ void euler_to_quat(const double e[3], const euler_seq_t es, double q[3])
     break;
   }
 
-  case EULER_232:
+  case EULER_YZY:
   {
     q[0] = ch * cos(h[0] + h[2]);
     q[1] = sh * sin(h[0] - h[2]);
@@ -156,7 +230,7 @@ void euler_to_quat(const double e[3], const euler_seq_t es, double q[3])
     break;
   }
 
-  case EULER_312:
+  case EULER_ZXY:
   {
     q[0] = c[0] * c[1] * c[2] - s[0] * s[1] * s[2];
     q[1] = c[0] * s[1] * c[2] - s[0] * c[1] * s[2];
@@ -165,7 +239,7 @@ void euler_to_quat(const double e[3], const euler_seq_t es, double q[3])
     break;
   }
 
-  case EULER_321:
+  case EULER_ZYX:
   {
     q[0] = c[0] * c[1] * c[2] + s[0] * s[1] * s[2];
     q[1] = c[0] * c[1] * s[2] - s[0] * s[1] * c[2];
@@ -175,7 +249,7 @@ void euler_to_quat(const double e[3], const euler_seq_t es, double q[3])
     break;
   }
 
-  case EULER_313:
+  case EULER_ZXZ:
   {
     q[0] = ch * cos(h[0] + h[2]);
     q[1] = sh * cos(h[0] - h[2]);
@@ -184,7 +258,7 @@ void euler_to_quat(const double e[3], const euler_seq_t es, double q[3])
     break;
   }
 
-  case EULER_323:
+  case EULER_ZYZ:
   {
     q[0] = ch * cos(h[0] + h[2]);
     q[1] = sh * sin(-h[0] + h[2]);
@@ -202,7 +276,7 @@ void euler_to_dcm(const double e[3], const euler_seq_t es, double m[3][3])
 
   switch (es)
   {
-  case EULER_123:
+  case EULER_XYZ:
   {
     m[0][0] = c[1] * c[2];
     m[0][1] = c[2] * s[0] * s[1] + c[0] * s[2];
@@ -216,7 +290,7 @@ void euler_to_dcm(const double e[3], const euler_seq_t es, double m[3][3])
     break;
   }
 
-  case EULER_132:
+  case EULER_XZY:
   {
     m[0][0] = c[1] * c[2];
     m[0][1] = c[0] * c[2] * s[1] + s[0] * s[2];
@@ -230,7 +304,7 @@ void euler_to_dcm(const double e[3], const euler_seq_t es, double m[3][3])
     break;
   }
 
-  case EULER_121:
+  case EULER_XYX:
   {
     m[0][0] = c[1];
     m[0][1] = s[0] * s[1];
@@ -244,7 +318,7 @@ void euler_to_dcm(const double e[3], const euler_seq_t es, double m[3][3])
     break;
   }
 
-  case EULER_131:
+  case EULER_XZX:
   {
     m[0][0] = c[1];
     m[0][1] = c[0] * s[1];
@@ -258,7 +332,7 @@ void euler_to_dcm(const double e[3], const euler_seq_t es, double m[3][3])
     break;
   }
 
-  case EULER_213:
+  case EULER_YXZ:
   {
     m[0][0] = c[0] * c[2] + s[0] * s[1] * s[2];
     m[0][1] = c[1] * s[2];
@@ -272,7 +346,7 @@ void euler_to_dcm(const double e[3], const euler_seq_t es, double m[3][3])
     break;
   }
 
-  case EULER_231:
+  case EULER_YZX:
   {
     m[0][0] = c[0] * c[1];
     m[0][1] = s[1];
@@ -286,7 +360,7 @@ void euler_to_dcm(const double e[3], const euler_seq_t es, double m[3][3])
     break;
   }
 
-  case EULER_212:
+  case EULER_YXY:
   {
     m[0][0] = c[0] * c[2] - c[1] * s[0] * s[2];
     m[0][1] = s[1] * s[2];
@@ -300,7 +374,7 @@ void euler_to_dcm(const double e[3], const euler_seq_t es, double m[3][3])
     break;
   }
 
-  case EULER_232:
+  case EULER_YZY:
   {
     m[0][0] = c[0] * c[1] * c[2] - s[0] * s[2];
     m[0][1] = c[2] * s[1];
@@ -314,7 +388,7 @@ void euler_to_dcm(const double e[3], const euler_seq_t es, double m[3][3])
     break;
   }
 
-  case EULER_312:
+  case EULER_ZXY:
   {
     m[0][0] = c[0] * c[2] - s[0] * s[1] * s[2];
     m[0][1] = c[2] * s[0] + c[0] * s[1] * s[2];
@@ -328,7 +402,7 @@ void euler_to_dcm(const double e[3], const euler_seq_t es, double m[3][3])
     break;
   }
 
-  case EULER_321:
+  case EULER_ZYX:
   {
     m[0][0] = c[1] * c[0];
     m[0][1] = c[1] * s[0];
@@ -342,7 +416,7 @@ void euler_to_dcm(const double e[3], const euler_seq_t es, double m[3][3])
     break;
   }
 
-  case EULER_313:
+  case EULER_ZXZ:
   {
     m[0][0] = c[2] * c[0] - s[2] * c[1] * s[0];
     m[0][1] = c[2] * s[0] + s[2] * c[1] * c[0];
@@ -356,7 +430,7 @@ void euler_to_dcm(const double e[3], const euler_seq_t es, double m[3][3])
     break;
   }
 
-  case EULER_323:
+  case EULER_ZYZ:
   {
     m[0][0] = c[0] * c[1] * c[2] - s[0] * s[2];
     m[0][1] = c[1] * c[2] * s[0] + c[0] * s[2];
@@ -376,7 +450,7 @@ void dcm_to_euler(const double m[3][3], double e[3], const euler_seq_t es)
 {
   switch (es)
   {
-  case EULER_123:
+  case EULER_XYZ:
   {
     e[0] = atan2(-m[2][1], m[2][2]);
     e[1] = asin(m[2][0]);
@@ -384,7 +458,7 @@ void dcm_to_euler(const double m[3][3], double e[3], const euler_seq_t es)
     break;
   }
 
-  case EULER_132:
+  case EULER_XZY:
   {
     e[0] = atan2(m[1][2], m[1][1]);
     e[1] = asin(-m[1][0]);
@@ -392,7 +466,7 @@ void dcm_to_euler(const double m[3][3], double e[3], const euler_seq_t es)
     break;
   }
 
-  case EULER_121:
+  case EULER_XYX:
   {
     e[0] = atan2(m[0][1], -m[0][2]);
     e[1] = acos(m[0][0]);
@@ -400,7 +474,7 @@ void dcm_to_euler(const double m[3][3], double e[3], const euler_seq_t es)
     break;
   }
 
-  case EULER_131:
+  case EULER_XZX:
   {
     e[0] = atan2(m[0][2], m[0][1]);
     e[1] = acos(m[0][0]);
@@ -408,7 +482,7 @@ void dcm_to_euler(const double m[3][3], double e[3], const euler_seq_t es)
     break;
   }
 
-  case EULER_213:
+  case EULER_YXZ:
   {
     e[0] = atan2(m[2][0], m[2][2]);
     e[1] = asin(-m[2][1]);
@@ -416,7 +490,7 @@ void dcm_to_euler(const double m[3][3], double e[3], const euler_seq_t es)
     break;
   }
 
-  case EULER_231:
+  case EULER_YZX:
   {
     e[0] = atan2(-m[0][2], m[0][0]);
     e[1] = asin(m[0][1]);
@@ -424,7 +498,7 @@ void dcm_to_euler(const double m[3][3], double e[3], const euler_seq_t es)
     break;
   }
 
-  case EULER_212:
+  case EULER_YXY:
   {
     e[0] = atan2(m[1][0], m[1][2]);
     e[1] = acos(m[1][1]);
@@ -432,7 +506,7 @@ void dcm_to_euler(const double m[3][3], double e[3], const euler_seq_t es)
     break;
   }
 
-  case EULER_232:
+  case EULER_YZY:
   {
     e[0] = atan2(m[1][2], -m[1][0]);
     e[1] = acos(m[1][1]);
@@ -440,7 +514,7 @@ void dcm_to_euler(const double m[3][3], double e[3], const euler_seq_t es)
     break;
   }
 
-  case EULER_312:
+  case EULER_ZXY:
   {
     e[0] = atan2(-m[1][0], m[1][1]);
     e[1] = asin(m[1][2]);
@@ -448,7 +522,7 @@ void dcm_to_euler(const double m[3][3], double e[3], const euler_seq_t es)
     break;
   }
 
-  case EULER_321:
+  case EULER_ZYX:
   {
     e[0] = atan2(m[0][1], m[0][0]);
     e[1] = asin(-m[0][2]);
@@ -456,7 +530,7 @@ void dcm_to_euler(const double m[3][3], double e[3], const euler_seq_t es)
     break;
   }
 
-  case EULER_313:
+  case EULER_ZXZ:
   {
     e[0] = atan2(m[2][0], -m[2][1]);
     e[1] = acos(m[2][2]);
@@ -464,7 +538,7 @@ void dcm_to_euler(const double m[3][3], double e[3], const euler_seq_t es)
     break;
   }
 
-  case EULER_323:
+  case EULER_ZYZ:
   {
     e[0] = atan2(m[2][1], m[2][0]);
     e[1] = acos(m[2][2]);
