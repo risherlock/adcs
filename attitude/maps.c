@@ -7,6 +7,9 @@
 #define M_PI_2 1.57079632679489661923
 #define M_PI 2 * 1.57079632679489661923
 
+// Choose an angle on infinite solutions
+#define ANGLE_ON_SINGULARITY_RAD 0.0f
+
 void quat_to_dcm(const double q[4], double r[3][3])
 {
   r[0][0] = q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3];
@@ -68,13 +71,14 @@ void quat_to_euler(const double q[4], double e[3], const euler_seq_t es)
   const double tolerance = 1e-7;
 
   // Parse Euler sequence
-  int i = (es / 100) % 10;
-  int j = (es / 10) % 10;
-  int k = es % 10;
+  const uint8_t i = (es / 100) % 10;
+  const uint8_t j = (es / 10) % 10;
+  uint8_t k = es % 10;
 
-  // Is it a proper Euler sequence?
+  // Tait-Bryan angles
   bool not_proper = true;
 
+  // Proper Euler angles
   if (i == k)
   {
     k = 6 - i - j;
@@ -82,7 +86,7 @@ void quat_to_euler(const double q[4], double e[3], const euler_seq_t es)
   }
 
   // Is permutation even or odd?
-  int epsilon = -(i - j) * (j - k) * (k - i) / 2.0f;
+  const int epsilon = -(i - j) * (j - k) * (k - i) / 2.0f;
   double a, b, c, d;
 
   if (not_proper)
@@ -108,19 +112,19 @@ void quat_to_euler(const double q[4], double e[3], const euler_seq_t es)
   const double hyp_cd = c_sq + d_sq;
 
   e[1] = acos(2.0 * ((hyp_ab) / (hyp_ab + hyp_cd)) - 1.0);
-  double theta_plus = atan2(b, a);
-  double theta_minus = atan2(d, c);
+  const double theta_plus = atan2(b, a);
+  const double theta_minus = atan2(d, c);
 
   // Check singularity
   if (fabs(e[1]) < tolerance)
   {
-    e[0] = 0.0f;
-    e[2] = 2 * theta_plus;
+    e[0] = ANGLE_ON_SINGULARITY_RAD;
+    e[2] = 2 * theta_plus - ANGLE_ON_SINGULARITY_RAD;
   }
   else if (fabs(fabs(e[1]) - M_PI_2) < tolerance)
   {
-    e[0] = 0.0f;
-    e[2] = 2 * theta_plus;
+    e[0] = ANGLE_ON_SINGULARITY_RAD;
+    e[2] = 2 * theta_minus + ANGLE_ON_SINGULARITY_RAD;
   }
   else // Safe
   {
