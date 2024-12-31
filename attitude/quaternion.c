@@ -18,10 +18,10 @@ void quat_normalize(double q[4])
 
   if (norm > QUAT_DIVISION_EPSILON)
   {
-    q[0] *= q[0] / norm;
-    q[1] *= q[1] / norm;
-    q[2] *= q[2] / norm;
-    q[3] *= q[3] / norm;
+    q[0] = q[0] / norm;
+    q[1] = q[1] / norm;
+    q[2] = q[2] / norm;
+    q[3] = q[3] / norm;
   }
 }
 
