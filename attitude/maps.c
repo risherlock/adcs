@@ -62,7 +62,7 @@ void dcm_to_quat(const double r[3][3], double q[4])
   }
 }
 
-// Quaternion to extrinsic Euler angles as described in Ref.[2].
+// Quaternion to intrinsic Euler angles as described in Ref.[2].
 void quat_to_euler(const double q[4], double e[3], const euler_seq_t es)
 {
   const double tolerance = 1e-7;
