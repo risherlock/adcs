@@ -61,18 +61,22 @@ double quat_dot_prod(const double q1[4], const double q2[2])
   return q1[0] * q2[0] + q1[1] * q2[1] + q1[2] * q2[2] + q1[3] * q2[3];
 }
 
+// q = q1 * q2
 void quat_prod(const double q1[4], const double q2[4], double q[4])
 {
   q[0] = q1[0] * q2[0] - q1[1] * q2[1] - q1[2] * q2[2] - q1[3] * q2[3];
-  q[1] = q1[1] * q2[0] + q1[0] * q2[1] + q1[2] * q2[3] - q1[3] * q2[2];
+  q[1] = q1[0] * q2[1] + q1[1] * q2[0] + q1[2] * q2[3] - q1[3] * q2[2];
   q[2] = q1[0] * q2[2] - q1[1] * q2[3] + q1[2] * q2[0] + q1[3] * q2[1];
-  q[3] = q1[0] * q2[3] + q1[1] * q2[2] - q1[2] * q2[1] + q1[3] * q2[0];
+  q[3] = q1[0] * q2[3] + q1[1] * q2[2] - q1[2] * q2[1] + q1[3] * q2[1];
 }
 
+
+// qe = q1 - q2
 void quat_err(const double q1[4], const double q2[4], double qe[4])
 {
-  quat_conj(q2, qe);
-  quat_prod(q1, qe, qe);
+  double q_conj[4];
+  quat_conj(q1, q_conj);
+  quat_prod(q_conj, q2, qe);
 }
 
 bool quat_to_axis_angle(const double q[4], double *psi, double v[3])
