@@ -18,10 +18,11 @@ void quat_normalize(double q[4])
 
   if (norm > QUAT_DIVISION_EPSILON)
   {
-    q[0] = q[0] / norm;
-    q[1] = q[1] / norm;
-    q[2] = q[2] / norm;
-    q[3] = q[3] / norm;
+    double inv_norm = 1.0 / norm;
+    q[0] = q[0] * inv_norm;
+    q[1] = q[1] * inv_norm;
+    q[2] = q[2] * inv_norm;
+    q[3] = q[3] * inv_norm;
   }
 }
 
@@ -70,7 +71,6 @@ void quat_prod(const double q1[4], const double q2[4], double q[4])
   q[3] = q1[0] * q2[3] + q1[1] * q2[2] - q1[2] * q2[1] + q1[3] * q2[1];
 }
 
-
 // qe = q1 - q2
 void quat_err(const double q1[4], const double q2[4], double qe[4])
 {
@@ -87,9 +87,10 @@ bool quat_to_axis_angle(const double q[4], double *psi, double v[3])
 
   if (divisor > QUAT_DIVISION_EPSILON)
   {
-    v[0] = q[1] / divisor;
-    v[1] = q[2] / divisor;
-    v[2] = q[3] / divisor;
+    double inv_divisor = 1.0 / divisor;
+    v[0] = q[1] * inv_divisor;
+    v[1] = q[2] * inv_divisor;
+    v[2] = q[3] * inv_divisor;
   }
   else // Infinite solutions
   {
@@ -128,18 +129,7 @@ void quat_rotate(const double q[4], const double v[3], double v_out[3])
   double q1q3x2 = 2.0 * q[1] * q[3];
   double q2q3x2 = 2.0 * q[2] * q[3];
 
-  v_out[0] = q0_sq * v[0] + q0q2x2 * v[2] +
-             q1_sq * v[0] - q0q3x2 * v[1] -
-             q2_sq * v[0] + q1q2x2 * v[1] -
-             q3_sq * v[0] + q1q3x2 * v[2];
-
-  v_out[1] = q0_sq * v[1] - q0q1x2 * v[2] -
-             q1_sq * v[1] + q0q3x2 * v[0] +
-             q2_sq * v[1] + q1q2x2 * v[0] -
-             q3_sq * v[1] + q2q3x2 * v[2];
-
-  v_out[2] = q0_sq * v[2] + q0q1x2 * v[1] -
-             q1_sq * v[2] - q0q2x2 * v[0] -
-             q2_sq * v[2] + q1q3x2 * v[0] +
-             q3_sq * v[2] + q2q3x2 * v[1];
+  v_out[0] = (q0_sq + q1_sq - q2_sq - q3_sq) * v[0] + (q1q2x2 - q0q3x2) * v[1] + (q1q3x2 + q0q2x2) * v[2];
+  v_out[1] = (q1q2x2 + q0q3x2) * v[0] + (q0_sq - q1_sq + q2_sq - q3_sq) * v[1] + (q2q3x2 - q0q1x2) * v[2];
+  v_out[2] = (q1q3x2 - q0q2x2) * v[0] + (q2q3x2 + q0q1x2) * v[1] + (q0_sq - q1_sq - q2_sq + q3_sq) * v[2];
 }
