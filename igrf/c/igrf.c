@@ -59,7 +59,7 @@ bool igrf(const igrf_time_t t, const double x[3], const igrf_frame_t f, double b
 {
   const double a = 6371.2;                  // Radius of Earth [km]
   const double theta = M_PI_2 - x[0] * D2R; // Colattitude [rad]
-  const double phi = x[1] * D2R;            // Londitude [rad]
+  const double phi = x[1] * D2R;            // Longitude [rad]
 
   double cd, sd, r;
   double ct = cos(theta);
@@ -83,7 +83,7 @@ bool igrf(const igrf_time_t t, const double x[3], const igrf_frame_t f, double b
   }
   else if (f == IGRF_GEOCENTRIC)
   {
-    r = x[2]; // Altitude
+    r = x[2]; // Radius
   }
 
   // Avoid singularity on pole
