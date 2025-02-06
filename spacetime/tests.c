@@ -15,7 +15,7 @@ int main(void)
   utc.minute = 45;
   utc.second = 30;
 
-  printf("Julian day number: %f\n", time_julian_day(utc)); // 2453138.115
+  printf("Julian day number: %f\n", time_julian_date(utc)); // 2453138.115
 
   // Example 5.06. Ref [1].
   utc.year = 2004;
