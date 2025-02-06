@@ -1,5 +1,28 @@
+#include <math.h>
 #include <inttypes.h>
+
 #include "dcm.h"
+
+void dcm_x(const double xi, double dcm[3][3])
+{
+  dcm[0][0] = 1.0; dcm[1][0] = 0.0;     dcm[2][0] = 0.0;
+  dcm[0][1] = 0.0; dcm[1][1] = cos(xi); dcm[2][1] = -sin(xi);
+  dcm[0][2] = 0.0; dcm[1][2] = sin(xi); dcm[2][2] = cos(xi);
+}
+
+void dcm_y(const double xi, double dcm[3][3])
+{
+  dcm[0][0] = cos(xi);  dcm[1][0] = 0.0; dcm[2][0] = sin(xi);
+  dcm[0][1] = 0.0;      dcm[1][1] = 1.0; dcm[2][1] = 0.0;
+  dcm[0][2] = -sin(xi); dcm[1][2] = 0.0; dcm[2][2] = cos(xi);
+}
+
+void dcm_z(const double xi, double dcm[3][3])
+{
+  dcm[0][0] = cos(xi); dcm[1][0] = -sin(xi); dcm[2][0] = 0.0;
+  dcm[0][1] = sin(xi); dcm[1][1] = cos(xi);  dcm[2][1] = 0.0;
+  dcm[0][2] = 0.0;     dcm[1][2] = 0.0;      dcm[2][2] = 1.0;
+}
 
 void dcm_unit(double r[3][3])
 {
