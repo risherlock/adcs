@@ -11,8 +11,16 @@ double fix(double x)
   return ceil(x);
 }
 
-// UTC to Julian day.
-double time_julian_day(const utc_t t)
+/**
+ * @brief UTC to Julian date.
+ *
+ * Number of decimal days since noon on November 24, 4714 BCE in the proleptic
+ * Gregorian calendar, or January 1, 4713 BCE in the proleptic Julian calendar.
+ *
+ * @param t UTC
+ * @return Julian date
+ */
+double time_julian_date(const utc_t t)
 {
   double j0 = 367 * t.year - fix(7.0 * (t.year + fix((t.month + 9.0) / 12.0)) / 4.0) + fix(275.0 * t.month / 9.0) + t.day + 1721013.5;
   double ut = t.hour + t.minute / 60.0 + t.second / 3600.0;

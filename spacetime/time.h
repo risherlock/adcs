@@ -19,7 +19,7 @@ typedef struct
   uint8_t second;
 }utc_t;
 
-double time_julian_day(const utc_t t);
+double time_julian_date(const utc_t t);
 double time_greenwich_sidereal(const utc_t t);
 double time_local_sidereal_hr(const utc_t t, const double elon);
 double time_local_sidereal_deg(const utc_t t, const double elon);
