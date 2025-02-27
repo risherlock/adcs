@@ -28,6 +28,18 @@ bool compare_matrices(double mat1[3][3], double mat2[3][3])
   return true;
 }
 
+bool compare_vectors(double vec1[3], double vec2[3])
+{
+  for (int i = 0; i < 3; i++)
+  {
+    if (fabs(vec1[i] - vec2[i]) > TOLERANCE)
+    {
+      return false;
+    }
+  }
+  return true;
+}
+
 int main(void)
 {
 
@@ -189,17 +201,29 @@ int main(void)
   {
     for (int j = 0; j < 12; j ++)
     {
-      double dcm[3][3];
+      double dcm[3][3], euler[3];
       euler_to_dcm(e[i], es[j], dcm);
+      dcm_to_euler(dcm, euler, es[j]);
 
       if(compare_matrices(turth_dcm[i][j], dcm))
       {
-        printf(GREEN "%d/95 PASSED!\n", count++);
+        printf(GREEN "euler_to_dcm: %d/95 PASSED!  ", count);
       }
       else
       {
-        printf(RED "%d/95 FAILED.\n", count++);
+        printf(RED "euler_to_dcm: %d/95 FAILED.  ", count);
       }
+
+      if(compare_vectors(euler, e[i]))
+      {
+        printf(GREEN "dcm_to_euler: %d/95 PASSED!\n", count);
+      }
+      else
+      {
+        printf(RED "dcm_to_euler: %d/95 FAILED.\n", count);
+      }
+
+      count ++;
     }
   }
 

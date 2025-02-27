@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -std=c99 -Wall -Wextra -Werror -pedantic -lm
+CFLAGS = -std=c99 -Wall -Wextra -Werror -lm
 
 TARGET = test
 BUILD_DIR = build
