@@ -1,4 +1,4 @@
-// risherlock (2025-02-03)
+// rms (2025-02-03)
 
 #ifndef _ADCS_FRAME_H_
 #define _ADCS_FRAME_H_

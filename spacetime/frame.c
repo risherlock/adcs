@@ -32,9 +32,6 @@ void frame_eci_to_ecef_dcm(const utc_t utc, double dcm[3][3])
   const double jd_fraction = fmod((fmod(jd_elapsed, 1.0) + 1.0), 1.0);
   double t = jd_elapsed / 36525.0;
 
-  printf("t: %.20f\n", t);
-  printf("jd_fraction: %.20f\n", jd_fraction);
-
   double xp = 0.0, yp = 0.0;
   const double s_prime = -0.000047 * t * D2R / 3600.0;
   euler_to_dcm((double[]){s_prime, xp, yp}, EULER_ZYX, W);
@@ -52,18 +49,6 @@ void frame_eci_to_ecef_dcm(const utc_t utc, double dcm[3][3])
   double WR[3][3];
   dcm_prod(W, R, WR);
   dcm_prod(WR, Q, dcm);
-
-  printf("W = \n");
-  print_dcm(W);
-
-  printf("R = \n");
-  print_dcm(R);
-
-  printf("Q = \n");
-  print_dcm(Q);
-
-  printf("dcm = \n");
-  print_dcm(dcm);
 }
 
 // void frame_ecef_to_ned(const double v_ecef[3], const double llr[3], double v_ned[3])

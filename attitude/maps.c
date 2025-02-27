@@ -4,8 +4,8 @@
 
 #include "maps.h"
 
-#define M_PI_2 1.57079632679489661923
-#define M_PI 2 * 1.57079632679489661923
+#define PI_2 1.57079632679489661923
+#define PI 2 * 1.57079632679489661923
 
 // Choose an angle on infinite solutions
 #define ANGLE_ON_SINGULARITY_RAD 0.0f
@@ -121,7 +121,7 @@ void quat_to_euler(const double q[4], double e[3], const euler_seq_t es)
     e[0] = ANGLE_ON_SINGULARITY_RAD;
     e[2] = 2 * theta_plus - ANGLE_ON_SINGULARITY_RAD;
   }
-  else if (fabs(fabs(e[1]) - M_PI_2) < tolerance)
+  else if (fabs(fabs(e[1]) - PI_2) < tolerance)
   {
     e[0] = ANGLE_ON_SINGULARITY_RAD;
     e[2] = 2 * theta_minus + ANGLE_ON_SINGULARITY_RAD;
@@ -134,20 +134,20 @@ void quat_to_euler(const double q[4], double e[3], const euler_seq_t es)
 
   if (not_proper)
   {
-    e[1] -= M_PI_2;
+    e[1] -= PI_2;
     e[2] *= epsilon;
   }
 
   // Normalize to [-pi, pi]
   for (uint8_t i = 0; i < 3; i++)
   {
-    if (e[i] < -M_PI)
+    if (e[i] < -PI)
     {
-      e[i] += 2.0 * M_PI;
+      e[i] += 2.0 * PI;
     }
-    else if (e[i] > M_PI)
+    else if (e[i] > PI)
     {
-      e[i] -= 2 * M_PI;
+      e[i] -= 2 * PI;
     }
   }
 }
