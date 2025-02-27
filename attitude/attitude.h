@@ -4,6 +4,6 @@
 #include "dcm.h"
 #include "maps.h"
 #include "euler.h"
-#include "quaternion.h"
+#include "quat.h"
 
 #endif // attitude.h

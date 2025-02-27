@@ -9,7 +9,7 @@ INC = \
 SRC = \
 dcm.c \
 maps.c \
-quaternion.c \
+quat.c \
 test_maps.c
 
 ifeq ($(OS),Windows_NT)

@@ -1,5 +1,5 @@
 #include <math.h>
-#include "quaternion.h"
+#include "quat.h"
 
 #define QUAT_COMPARISON_EPSILON 1e-5
 #define QUAT_DIVISION_EPSILON 1e-9
