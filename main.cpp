@@ -8,6 +8,7 @@
 #include "frame.h"
 #include "attitude.h"
 #include "time.h"
+#include "igrf.h"
 
 typedef struct VERIN {
     char line1[70];
@@ -32,6 +33,9 @@ void convert_position_to_latlong(double r[3], utc_t t, double lla[3]) {
 void compute_magnetic_field_at_position(double r[3], utc_t datetime, double b[3]) {
     double lla[3];
     convert_position_to_latlong(r, datetime,lla);
+    const igrf_time_t dt = {.year = datetime.year, .month = datetime.month, .day = datetime.day, datetime.hour, datetime.minute, datetime.second};
+    bool status = igrf(dt, lla, IGRF_GEODETIC, b);
+
     // b=igrf(datetime, lla[0], lla[1], lla[2]);
 }
 
@@ -50,11 +54,12 @@ void runVER(VERIN *verins)
     char line[256];
     std::ofstream out_file;
     int steps;
+    utc_t sim_time;
 
     steps = (verins->stopmin-verins->startmin)/verins->stepmin;
 
     out_file.open("out_file.csv");
-    out_file << "timestamp," << "dis1,"<< "dis2," << "dis3,"<<"vel1,"<<"vel2,"<<"vel3"<<"b1"<<"b2"<<"b3";
+    out_file << "timestamp," << "dis1,"<< "dis2," << "dis3,"<<"vel1,"<<"vel2,"<<"vel3,"<<"b1,"<<"b2,"<<"b3";
     printf("steps: %d",steps);
 
     tle.parseLines(verins->line1,verins->line2);
@@ -62,7 +67,9 @@ void runVER(VERIN *verins)
     for(int i=0; i<=steps; i++) {
         mins = verins->startmin+i*verins->stepmin;
         tle.getRV(mins,r,v);
-        compute_magnetic_field_at_position(r, tle.datetime, b);
+        add_time_to_utc(tle.datetime, mins*60, &sim_time);
+
+        compute_magnetic_field_at_position(r, sim_time, b);
     
         out_file<<"\n"<<mins<<","<<r[0]<<","<<r[1]<<","<<r[2]<<","<<v[0]<<","<<v[1]<<","<<v[2]<<","<<b[0]<<","<<b[1]<<","<<b[2];
     }
@@ -77,9 +84,9 @@ int main(void) {
     VERIN verin; 
 
     // Manually populate the VERIN structure
-    verin.stepmin = 10;
+    verin.stepmin = .01;
     verin.startmin = 0;
-    verin.stopmin = 4320;
+    verin.stopmin = 43;
     strncpy(verin.line1, "1 25544U 98067A   20300.83097691  .00001534  00000-0  35580-4 0  9996", 69);
     verin.line1[69] = '\0'; 
     strncpy(verin.line2, "2 25544  34.2682 348.7242 1859667 331.7664  19.3264 10.82419157413667", 69);

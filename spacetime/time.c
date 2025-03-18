@@ -72,3 +72,80 @@ double time_local_sidereal_hr(const utc_t t, const double elon)
 {
   return time_local_sidereal_deg(t, elon) / 15.0;
 }
+
+int isLeapYear(int year)
+{
+  if (year % 4 != 0)
+  {
+    return 0;
+  }
+  else if (year % 100 != 0)
+  {
+    return 1;
+  }
+  else if (year % 400 != 0)
+  {
+    return 0;
+  }
+  else
+  {
+    return 1;
+  }
+}
+
+double getDaysInMonth(int month, int year){
+  double daysInMonth[] = {31,28,31,30,31,30,31,31,30,31,30,31};
+
+  if (isLeapYear(year) == 1)
+  {
+    daysInMonth[1] = 29;
+  }
+
+  return daysInMonth[month-1];
+}
+
+void calculateMYD(const utc_t tin, double days, utc_t *tout){
+  int month = tin.month;
+  int year = tin.year; 
+  double daysInMonth = getDaysInMonth(month, year);
+
+  while (days > daysInMonth)
+  {
+    days -= daysInMonth;
+    month++;
+    if (month > 12)
+    {
+      month = 1;
+      year++;
+    }
+    daysInMonth = getDaysInMonth(month, year);
+  }
+
+  tout->year = year;
+  tout->month = month;
+  tout->day = days;
+}
+
+
+double add_time_to_utc(const utc_t tin, const double seconds, utc_t *tout)
+{
+  double t = tin.hour * 3600.0 + tin.minute * 60.0 + tin.second + seconds;
+  tout->second = fmod(t, 60.0);
+  t = (t - tout->second) / 60.0;
+  tout->minute = fmod(t, 60.0);
+  t = (t - tout->minute) / 60.0;
+  tout->hour = fmod(t, 24.0);
+  t = (t - tout->hour) / 24.0;
+
+  double days = t + tin.day;
+
+  if(tin.day>27) {
+    calculateMYD(tin, days, tout);
+  } else {
+    tout->day = t + tin.day;
+    tout->month = tin.month;
+    tout->year = tin.year;
+  }
+
+  return 0;
+}

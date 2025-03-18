@@ -9,7 +9,7 @@ INC = \
 -Ispacetime/iau06 \
 -Iorbit \
 -Iattitude \
--Iigrf
+-Iigrf/c
 
 SRC = \
 spacetime/time.c \
@@ -21,6 +21,7 @@ spacetime/iau06/iau06.c \
 spacetime/iau06/iau06_data.c \
 orbit/SGP4.c \
 orbit/TLE.cpp \
+igrf/c/igrf.c \
 main.cpp
 
 all: $(TARGET)
