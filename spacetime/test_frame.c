@@ -162,9 +162,71 @@ bool test_frame_eci_to_ecef_dcm()
   return status;
 }
 
+bool test_frame_ecef_to_lla(){
+  bool status = true;
+
+  // Test cases
+  double test_vectors[][3] = {
+    {2217938, 23837489, 0},
+    {4510731, 4510731, 0},
+    {0, 4507609, 4498719},
+    {0, 23837489, 0},
+    {234234, 23489, 67879},
+    {934234.678, 0, 7879},
+  };
+
+  double ground_truths[][3] ={
+    {0, 0.000008468426960e+07, 1.756231267825302e+07},
+    {0, 0.450000000000000e+02, 9.999564167531208e+02},
+    {0.451358381914832e+02, 0.900000000000000e+02, 9.998658662531525e+02},
+    {0, 90, 17459352},
+    {0.000019186650708e+06, 0.000005726480182e+06, -6.131189989016756e+06},
+    {0.000000506340010e+06, 0, -5.443867507196519e+06},
+  };
+
+  // Input for each test case
+  const char *test_names[] =
+  {
+    "Test Case 1: [2217938, 23837489, 0]",
+    "Test Case 2: [4510731 4510731 0]",
+    "Test Case 3: [0 4507609 4498719]",
+    "Test Case 4: [0 23837489 0]",
+    "Test Case 5: [234234 23489 67879]",
+    "Test Case 6: [234234 23489 67879]"
+  };
+
+  for (size_t i = 0; i < sizeof(test_vectors) / sizeof(*test_vectors); i++)
+  {
+    double lla[3];
+    frame_ecef_to_lla(test_vectors[i], lla);
+
+    bool status = true;
+    for (int j = 0; j < 3; j++)
+    {
+      if (fabs(lla[j] - ground_truths[i][j]) > 1e-8)
+      {
+        status = false;
+        break;
+      }
+    }
+
+    if (status)
+    {
+      printf(GREEN "Test %s PASSED!\n", test_names[i]);
+    }
+    else
+    {
+      printf(RED "Test %s FAILED.\n", test_names[i]);
+    }
+  }
+
+  return status;
+}
+
 int main()
 {
   test_frame_eci_to_ecef_dcm();
+  test_frame_ecef_to_lla();
   printf(RESET);
 
   return 0;

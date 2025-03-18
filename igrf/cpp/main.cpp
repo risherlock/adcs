@@ -1,24 +1,15 @@
+
 // Basic implementation of 'igrf.h'
 // Rishav (2021/12/27)
 
 #include <iostream>
 #include "igrf.h"
 
-float latitude = 28.3949;
-float longitude = 84.1240;
-float radius = 6371.2 + 1000;
-
-uint16_t year = 2021;
-uint8_t month = 12;
-uint8_t day = 29;
-uint8_t hour = 0;
-uint8_t min = 0;
-uint8_t sec = 0;
-
 igrf compass;
 
 int main()
 {
+    
 
     compass.set_date_time(year, month, day, hour, min, sec);
     compass.update(latitude * M_PI / 180.0f, longitude * M_PI / 180.0f, radius);

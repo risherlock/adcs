@@ -1,5 +1,6 @@
 CC = gcc
 CFLAGS = -std=c99 -Wall -Wextra -Werror
+LDFLAGS = -lm
 
 TARGET = tests
 BUILD_DIR = build
@@ -23,19 +24,19 @@ ifeq ($(OS),Windows_NT)
     MKDIR = mkdir
 else
     RM = rm -rf
-    MKDIR = mkdir -p
+    MKDIR = mkdir
 endif
 
 all: $(TARGET)
 
 $(TARGET): $(SRC)
-	@if not exist $(BUILD_DIR) $(MKDIR) $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(INC) -o $(BUILD_DIR)/$(TARGET) $(SRC)
+	$(MKDIR) $(BUILD_DIR) || true
+	$(CC) $(CFLAGS) $(INC) -o $(BUILD_DIR)/$(TARGET) $(SRC) $(LDFLAGS)
 
 run: all
 	$(BUILD_DIR)/$(TARGET)
 
 clean:
-	$(RM) $(BUILD_DIR)
+	rm -r $(BUILD_DIR) || true
 
 .PHONY: all run clean
