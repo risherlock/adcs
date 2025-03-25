@@ -4,8 +4,8 @@
  * @cite [1] Curtis - Orbital mechanics for engineering students (2020)
  */
 
-#ifndef _TIME_H_
-#define _TIME_H_
+#ifndef _ADCS_TIME_H_
+#define _ADCS_TIME_H_
 
 #include <inttypes.h>
 
