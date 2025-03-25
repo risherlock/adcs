@@ -34,7 +34,8 @@ void frame_eci_to_ecef_dcm(const utc_t utc, double dcm[3][3])
 
   double xp = 0.0, yp = 0.0;
   const double s_prime = -0.000047 * t * D2R / 3600.0;
-  euler_to_dcm((double[]){s_prime, xp, yp}, EULER_ZYX, W);
+  const double zyx[3] = {s_prime, xp, yp};
+  euler_to_dcm(zyx, EULER_ZYX, W);
 
   const double era = fmod(2.0 * PI * (jd_fraction + 0.7790572732640 + 0.00273781191135448 * jd_elapsed), 2.0 * PI);
   dcm_z(era, R);
@@ -44,7 +45,8 @@ void frame_eci_to_ecef_dcm(const utc_t utc, double dcm[3][3])
 
   double E = atan2(y, x);
   double d = atan(sqrt((x * x + y * y) / (1.0 - x * x - y * y)));
-  euler_to_dcm((double[]){E, d, -E - s}, EULER_ZYZ, Q);
+  const double zyz[3] = {E, d, -E - s};
+  euler_to_dcm(zyz, EULER_ZYZ, Q);
 
   double WR[3][3];
   dcm_prod(W, R, WR);
