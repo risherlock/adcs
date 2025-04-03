@@ -1,5 +1,9 @@
 # adcs
 
+<p align="center">
+  <img width="150" src="adcs.png">
+</p>
+
 Utilities and algorithms for the Attitude Determination and Control System (ADCS) of spacecraft, targeted toward embedded hardware.
 
 ## Contents
