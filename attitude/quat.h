@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include "euler.h"
 
+void quat_neg(double q[4]);
 void quat_unit(double q[4]);
 void quat_normalize(double q[4]);
 double quat_norm(const double q[4]);
@@ -20,6 +21,7 @@ void quat_prod(const double q1[4], const double q2[4], double q[4]);
 void quat_err(const double q1[4], const double q2[4], double qe[4]);
 void quat_rotate(const double q[4], const double v[3], double v_out[3]);
 void quat_to_euler(const double q[4], double e[3], const euler_seq_t es);
+void quat_slerp(const double q1[4], const double q2[4], const double u, double q[4]);
 
 /*
   Todos

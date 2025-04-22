@@ -8,7 +8,7 @@
 
 #define QUAT_ANGLE_ON_SINGULARITY_RAD 0.0f
 #define QUAT_COMPARISON_EPSILON 1e-5f
-#define QUAT_DIVISION_EPSILON 1e-9f
+#define QUAT_DIVISION_EPSILON 1e-6f
 #define EULER_SINGULARITY_EPSILON 1e-7f
 
 void quat_unit(double q[4])
@@ -17,6 +17,14 @@ void quat_unit(double q[4])
   q[1] = 0.0;
   q[2] = 0.0;
   q[3] = 0.0;
+}
+
+void quat_neg(double q[4])
+{
+  q[0] = -q[0];
+  q[1] = -q[1];
+  q[2] = -q[2];
+  q[3] = -q[3];
 }
 
 void quat_normalize(double q[4])
@@ -40,7 +48,7 @@ double quat_norm(const double q[4])
 
 void quat_conj(const double q[4], double q_conj[4])
 {
-  q_conj[0] = q[0];
+  q_conj[0] =  q[0];
   q_conj[1] = -q[1];
   q_conj[2] = -q[2];
   q_conj[3] = -q[3];
@@ -54,11 +62,11 @@ void quat_copy(const double q_src[4], double q_dest[4])
   q_dest[3] = q_src[3];
 }
 
-// Returns true if quaternions represent the same rotation (q1 == ±q2).
+// Returns true if quaternions represent the same rotation (q1 == +/-q2).
 bool quat_equal(const double q1[4], const double q2[4])
 {
   const double dot = quat_dot(q1, q2);
-  return fabs(1.0 - fbs(dot)) <= QUAT_COMPARISON_EPSILON;
+  return fabs(1.0 - fabs(dot)) <= QUAT_COMPARISON_EPSILON;
 }
 
 double quat_dot(const double q1[4], const double q2[2])
@@ -223,4 +231,69 @@ void quat_to_euler(const double q[4], double e[3], const euler_seq_t es)
       e[i] -= 2 * PI;
     }
   }
+}
+
+/**
+ * @brief Spherical linear interpolation (SLERP) between two quaternions.
+ *
+ * @param q1 Start quaternion (must be a unit quaternion)
+ * @param q2 End quaternion (must be a unit quaternion)
+ * @param u Interpolation parameter in range [0,1]
+ * @param q Interpolated output quaternion
+ *
+ * @note When q1 and q2 are antipodal (q1 = -q2), the interpolation plane is chosen arbitrarily due
+ *       to infinite possible solutions.
+ *
+ *       The parameter `u` determines the interpolation between q1 and q2. u = 0 and u = 1 returns
+ *       exactly q1 and q2 (or its antipodal equivalent -q2), respectively. Intermediate values
+ *       (e.g. u = 0.6) results in a quaternion representing 60% of the rotation from q1 toward q2
+ *       along the shortest path.
+ */
+void quat_slerp(const double q1[4], const double q2[4], const double u, double q[4])
+{
+  // If q1 and q2 represent same orientation.
+  if(quat_equal(q1, q2))
+  {
+    quat_copy(q1, q);
+    return;
+  }
+
+  double qb[4] = {q2[0], q2[1], q2[2], q2[3]};
+  double dot = quat_dot(q1, q2);
+
+  // Ensure shortest angular path
+  if (dot < 0.0)
+  {
+    quat_neg(qb);
+    dot = -dot;
+  }
+
+  // Ensure dot is in valid domain for acos i.e. [-1, 1].
+  dot = (dot < -1.0) ? -1.0 : (dot > 1.0) ? 1.0 : dot;
+
+  const double theta = acos(fabs(dot));
+  const double st = sqrt(1.0 - dot * dot);
+  double a, b;
+
+  // Fall back to LERP if sin(theta) -> 0.
+  if (st <= QUAT_DIVISION_EPSILON)
+  {
+    a = 1.0 - u;
+    b = u;
+  }
+  else // SLERP
+  {
+    const double stinv = 1 / st;
+    const double ut = u * theta;
+
+    a = sin(theta - ut) * stinv;
+    b = sin(ut) * stinv;
+  }
+
+  q[0] = a * q1[0] + b * qb[0];
+  q[1] = a * q1[1] + b * qb[1];
+  q[2] = a * q1[2] + b * qb[2];
+  q[3] = a * q1[3] + b * qb[3];
+
+  quat_normalize(q);
 }

@@ -21,3 +21,4 @@ Basic rotation manipulations for ADCS implemented using the C99 standard.
 3. Motekew - Quaternion to DCM and back again (2014)
 4. Waveren - From quaternion to matrix and back (2005)
 5. Schaub, Junkins - Analytical mechanics of space systems - 4th Ed. (2018)
+6. Shoemake - Animating rotation with Quaternion Curves (1985)
