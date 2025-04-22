@@ -9,6 +9,7 @@
 #define QUAT_ANGLE_ON_SINGULARITY_RAD 0.0f
 #define QUAT_COMPARISON_EPSILON 1e-5f
 #define QUAT_DIVISION_EPSILON 1e-9f
+#define EULER_SINGULARITY_EPSILON 1e-7f
 
 void quat_unit(double q[4])
 {
@@ -53,14 +54,11 @@ void quat_copy(const double q_src[4], double q_dest[4])
   q_dest[3] = q_src[3];
 }
 
+// Returns true if quaternions represent the same rotation (q1 == ±q2).
 bool quat_equal(const double q1[4], const double q2[4])
 {
-  bool q0_eq = fabs(q1[0] - q2[0]) <= QUAT_COMPARISON_EPSILON;
-  bool q1_eq = fabs(q1[1] - q2[1]) <= QUAT_COMPARISON_EPSILON;
-  bool q2_eq = fabs(q1[2] - q2[2]) <= QUAT_COMPARISON_EPSILON;
-  bool q3_eq = fabs(q1[3] - q2[3]) <= QUAT_COMPARISON_EPSILON;
-
-  return q0_eq && q1_eq && q2_eq && q3_eq;
+  const double dot = quat_dot(q1, q2);
+  return fabs(1.0 - fbs(dot)) <= QUAT_COMPARISON_EPSILON;
 }
 
 double quat_dot(const double q1[4], const double q2[2])
@@ -145,8 +143,6 @@ void quat_to_dcm(const double q[4], double r[3][3])
 // Quaternion to intrinsic Euler angles as described in Ref.[2].
 void quat_to_euler(const double q[4], double e[3], const euler_seq_t es)
 {
-  const double tolerance = 1e-7;
-
   // Parse Euler sequence
   const uint8_t i = (es / 100) % 10;
   const uint8_t j = (es / 10) % 10;
@@ -193,12 +189,12 @@ void quat_to_euler(const double q[4], double e[3], const euler_seq_t es)
   const double theta_minus = atan2(d, c);
 
   // Check singularity
-  if (fabs(e[1]) < tolerance)
+  if (fabs(e[1]) < EULER_SINGULARITY_EPSILON)
   {
     e[0] = QUAT_ANGLE_ON_SINGULARITY_RAD;
     e[2] = 2 * theta_plus - QUAT_ANGLE_ON_SINGULARITY_RAD;
   }
-  else if (fabs(fabs(e[1]) - PI_2) < tolerance)
+  else if (fabs(fabs(e[1]) - PI_2) < EULER_SINGULARITY_EPSILON)
   {
     e[0] = QUAT_ANGLE_ON_SINGULARITY_RAD;
     e[2] = 2 * theta_minus + QUAT_ANGLE_ON_SINGULARITY_RAD;
