@@ -248,5 +248,12 @@ int main(void)
   double q4[4] = {0.697035155263178, -0.0605889265769267, 0.686790776520073, -0.19695025663971};
 
   printf("q-dist: %.15f\n", quat_dist(q4, q3));
- return 0;
+
+  const double *qin[2] = {q3, q4};  // Array of pointers
+  double w[2] = {0.23, 0.32};
+  double qm[4];
+  quat_mean(qin, 2, w, qm);
+  printf("q-mean: %.15f, %.15f, %.15f, %.15f\n", qm[0], qm[1], qm[2], qm[3]);
+
+  return 0;
 }

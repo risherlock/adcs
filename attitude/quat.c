@@ -259,6 +259,39 @@ void quat_to_euler(const double q[4], double e[3], const euler_seq_t es)
   }
 }
 
+// Weighted average of two quaternions (n=2 case)
+void quat_mean(const double *q[], const int n, const double *w, double qm[4])
+{
+  if (n != 2)
+  {
+    // TODO
+    return;
+  }
+
+  const double *q1 = q[0];
+  const double *q2 = q[1];
+  const double w1 = w[0];
+  const double w2 = w[1];
+
+  double dot12 = quat_dot(q1, q2);
+  double dot11 = quat_dot(q1, q1);
+  double z = sqrt((w1 - w2) * (w1 - w2) + 4.0 * w1 * w2 * dot11 * dot11); // Eqn.(18)
+
+  // Eqn.(19)
+  double temp = z * (w1 + w2 + z);
+  double a = sqrt(w1 * (w1 - w2 + z) / temp);
+  double b = sqrt(w2 * (w2 - w1 + z) / temp);
+  double sign = (dot12 >= 0) ? 1.0 : -1.0;
+
+  for (int i = 0; i < 4; i++)
+  {
+    qm[i] = a * q1[i] + sign * b * q2[i];
+  }
+
+  quat_normalize(qm);
+  quat_canonize(qm);
+}
+
 /**
  * @brief Spherical linear interpolation (SLERP) between two quaternions.
  *
