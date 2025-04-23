@@ -19,6 +19,15 @@ void quat_unit(double q[4])
   q[3] = 0.0;
 }
 
+// Enforce q[0] >= 0 i.e. the canonical form.
+void quat_canonize(double q[4])
+{
+  if (q[0] < 0)
+  {
+    quat_neg(q);
+  }
+}
+
 void quat_neg(double q[4])
 {
   q[0] = -q[0];
@@ -74,6 +83,17 @@ double quat_dot(const double q1[4], const double q2[2])
   return q1[0] * q2[0] + q1[1] * q2[1] + q1[2] * q2[2] + q1[3] * q2[3];
 }
 
+// Angular distance [rad] between two quaternions.
+double quat_dist(const double q1[4], const double q2[4])
+{
+  double qe[4];
+  quat_err(q1, q2, qe); // Rotation from q2 to q1
+  quat_normalize(qe);   // Confirm domain for acos
+  quat_canonize(qe);    // Ensure the shortest path
+
+  return 2.0 * acos(fabs(qe[0]));
+}
+
 // q = q1 * q2
 void quat_prod(const double q1[4], const double q2[4], double q[4])
 {
@@ -83,12 +103,18 @@ void quat_prod(const double q1[4], const double q2[4], double q[4])
   q[3] = q1[0] * q2[3] + q1[1] * q2[2] - q1[2] * q2[1] + q1[3] * q2[0];
 }
 
-// qe = q1 - q2
-void quat_err(const double q1[4], const double q2[4], double qe[4])
+/**
+ * @brief Computes the error quaternion representing the rotation from q2 to q1.
+ *
+ * @note In the setting of real numbers, x = x1 - x2 represents the offset that converts x2 to x1.
+ *       Analogously the quaternion q (q1 - q2) represents the rotation which rotates q2 to q1,
+ *       i.e. q1 = q * q2 => q = q1 * inv(q2).
+ */
+void quat_err(const double q1[4], const double q2[4], double q[4])
 {
-  double q_conj[4];
-  quat_conj(q1, q_conj);
-  quat_prod(q_conj, q2, qe);
+  double q2_inv[4];
+  quat_conj(q2, q2_inv);
+  quat_prod(q1, q2_inv, q);
 }
 
 bool quat_to_axan(const double q[4], double *psi, double v[3])
