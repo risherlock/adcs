@@ -213,3 +213,23 @@ void dcm_to_euler(const double m[3][3], double e[3], const euler_seq_t es)
   }
   }
 }
+
+
+/**
+ * @brief Time derivative of DCM for given angular velocity expressed in the body frame.
+ *
+ * @note  This function assumes that the input DCM represents a rotation from the inertial frame to
+ *        the body frame.
+ *
+ * @warning  If the DCM represents a rotation from the body frame to the inertial frame, the
+ *           following equation applies: m_dot = m x [w]. In this case, the angular velocity is
+ *           expressed in the inertial frame.
+ *
+ * @todo Explore how same function would be used for the case in the warning.
+ */
+void dcm_rate(const double w[3], const double m[3][3], double m_dot[3][3])
+{
+  // m_dot = -[w] x m where, [w] is skew-symmetric matrix of w.
+  const double wx[3][3] = {{0.0, w[2],  -w[1]}, {-w[2], 0.0, w[0]}, {w[1], -w[0], 0.0}};
+  dcm_prod(wx, m, m_dot);
+}

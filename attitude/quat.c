@@ -143,6 +143,14 @@ bool quat_to_axan(const double q[4], double *psi, double v[3])
   return status;
 }
 
+void quat_rate(const double q[4], const double w[3], double q_dot[4])
+{
+  q_dot[0] = 0.5 * (-w[0] * q[1] - w[1] * q[2] - w[2] * q[3]);
+  q_dot[1] = 0.5 * ( w[0] * q[0] + w[2] * q[2] - w[1] * q[3]);
+  q_dot[2] = 0.5 * ( w[1] * q[0] - w[2] * q[1] + w[0] * q[3]);
+  q_dot[3] = 0.5 * ( w[2] * q[0] + w[1] * q[1] - w[0] * q[2]);
+}
+
 void quat_rotate(const double q[4], const double v[3], double v_out[3])
 {
   double q0_sq = q[0] * q[0];
@@ -259,7 +267,7 @@ void quat_to_euler(const double q[4], double e[3], const euler_seq_t es)
   }
 }
 
-// Weighted average of two quaternions (n=2 case)
+// Weighted average of two quaternions (n=2 case) as described in Ref.[7].
 void quat_mean(const double *q[], const int n, const double *w, double qm[4])
 {
   if (n != 2)

@@ -4,6 +4,8 @@ Basic rotation manipulations for ADCS implemented using the C99 standard.
 
 ## Notes
 
+1. DCM represents rotation from intertial to body frame.
+
 ### Todos
 
 1. Unit tests.
