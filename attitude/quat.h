@@ -16,7 +16,7 @@ void quat_to_dcm(const double q[4], double m[3][3]);
 void quat_conj(const double q[4], double q_conj[4]);
 void quat_copy(const double q_src[4], double q_dest[4]);
 bool quat_equal(const double q1[4], const double q2[4]);
-double quat_dot(const double q1[4], const double q2[2]);
+double quat_dot(const double q1[4], const double q2[4]);
 double quat_dist(const double q1[4], const double q2[4]);
 bool quat_to_axan(const double q[4], double *psi, double v[3]);
 void quat_prod(const double q1[4], const double q2[4], double q[4]);

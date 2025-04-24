@@ -20,7 +20,7 @@ typedef enum
   EULER_ZYZ = 323
 } euler_seq_t;
 
-void euler_to_quat(const double e[3], const euler_seq_t es, double q[3]);
+void euler_to_quat(const double e[3], const euler_seq_t es, double q[4]);
 void euler_to_dcm(const double e[3], const euler_seq_t es, double m[3][3]);
 
 #endif // euler.h

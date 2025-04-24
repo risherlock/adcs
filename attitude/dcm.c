@@ -214,7 +214,6 @@ void dcm_to_euler(const double m[3][3], double e[3], const euler_seq_t es)
   }
 }
 
-
 /**
  * @brief Time derivative of DCM for given angular velocity expressed in the body frame.
  *

@@ -78,7 +78,7 @@ bool quat_equal(const double q1[4], const double q2[4])
   return fabs(1.0 - fabs(dot)) <= QUAT_COMPARISON_EPSILON;
 }
 
-double quat_dot(const double q1[4], const double q2[2])
+double quat_dot(const double q1[4], const double q2[4])
 {
   return q1[0] * q2[0] + q1[1] * q2[1] + q1[2] * q2[2] + q1[3] * q2[3];
 }

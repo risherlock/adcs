@@ -4,7 +4,7 @@
 
 #include "euler.h"
 
-void euler_to_quat(const double e[3], const euler_seq_t es, double q[3])
+void euler_to_quat(const double e[3], const euler_seq_t es, double q[4])
 {
   const double c[3] = {cos(0.5 * e[0]), cos(0.5 * e[1]), cos(0.5 * e[2])};
   const double s[3] = {sin(0.5 * e[0]), sin(0.5 * e[1]), sin(0.5 * e[2])};
