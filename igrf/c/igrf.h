@@ -46,4 +46,5 @@ bool igrf(const igrf_time_t t, const double x[3], const igrf_frame_t f, double b
 #ifdef __cplusplus
 }
 #endif
+
 #endif // igrf.h

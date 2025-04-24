@@ -6,6 +6,11 @@
 #include "frame.h"
 #include "time.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 void frame_eci_to_ecef_dcm(const utc_t t, double dcm[3][3]);
 
 void frame_ecef_to_ned(const double v_ecef[3], const double llr[3], double v_ned[3]);
@@ -16,5 +21,9 @@ void frame_ned_to_ecef(const double v_ned[3], const double llr[3], double v_ecef
 
 // void frame_ned_to_ecef_dcm(const double llr[3]);
 // void frame_ecef_to_ned_dcm(const double llr[3]);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // frame.h

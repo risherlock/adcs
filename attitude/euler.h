@@ -4,6 +4,10 @@
 #ifndef _ATTITUDE_EULER_H_
 #define _ATTITUDE_EULER_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum
 {
   EULER_XYX = 121,
@@ -22,5 +26,9 @@ typedef enum
 
 void euler_to_quat(const double e[3], const euler_seq_t es, double q[4]);
 void euler_to_dcm(const double e[3], const euler_seq_t es, double m[3][3]);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // euler.h

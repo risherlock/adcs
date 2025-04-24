@@ -9,6 +9,11 @@
 
 #include <inttypes.h>
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 typedef struct
 {
   uint16_t year;
@@ -23,5 +28,9 @@ double time_julian_date(const utc_t t);
 double time_greenwich_sidereal(const utc_t t);
 double time_local_sidereal_hr(const utc_t t, const double elon);
 double time_local_sidereal_deg(const utc_t t, const double elon);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // time.h
