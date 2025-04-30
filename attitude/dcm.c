@@ -3,6 +3,7 @@
 
 #include "dcm.h"
 
+// DCM corresponding to a rotation by angle `xi` [rad] about the x-axis.
 void dcm_x(const double xi, double m[3][3])
 {
   m[0][0] = 1.0; m[1][0] = 0.0;     m[2][0] = 0.0;
@@ -10,6 +11,7 @@ void dcm_x(const double xi, double m[3][3])
   m[0][2] = 0.0; m[1][2] = sin(xi); m[2][2] = cos(xi);
 }
 
+// DCM corresponding to a rotation by angle `xi` [rad] about the y-axis.
 void dcm_y(const double xi, double m[3][3])
 {
   m[0][0] = cos(xi);  m[1][0] = 0.0; m[2][0] = sin(xi);
@@ -17,6 +19,7 @@ void dcm_y(const double xi, double m[3][3])
   m[0][2] = -sin(xi); m[1][2] = 0.0; m[2][2] = cos(xi);
 }
 
+// DCM corresponding to a rotation by angle `xi` [rad] about the z-axis.
 void dcm_z(const double xi, double m[3][3])
 {
   m[0][0] = cos(xi); m[1][0] = -sin(xi); m[2][0] = 0.0;
@@ -24,6 +27,7 @@ void dcm_z(const double xi, double m[3][3])
   m[0][2] = 0.0;     m[1][2] = 0.0;      m[2][2] = 1.0;
 }
 
+// DCM corresponding to no rotation.
 void dcm_unit(double m[3][3])
 {
   m[0][0] = 1.0; m[0][1] = 0.0; m[0][2] = 0.0;
@@ -31,6 +35,7 @@ void dcm_unit(double m[3][3])
   m[2][0] = 0.0; m[2][1] = 0.0; m[2][2] = 1.0;
 }
 
+// Computes transpose of input DCM/
 void dcm_trans(const double m[3][3], double t[3][3])
 {
   for (int i = 0; i < 3; i++)
@@ -41,6 +46,7 @@ void dcm_trans(const double m[3][3], double t[3][3])
   }
 }
 
+// DCM multiplication: m = a * b
 void dcm_prod(const double a[3][3], const double b[3][3], double m[3][3])
 {
   for (int i = 0; i < 3; i++)
@@ -57,6 +63,7 @@ void dcm_prod(const double a[3][3], const double b[3][3], double m[3][3])
   }
 }
 
+// Rotates the input vector `v` using the DCM `m` to produce the output vector `v_out`.
 void dcm_rotate(const double m[3][3], const double v[3], double v_out[3])
 {
   for (int i = 0; i < 3; i++)
@@ -70,6 +77,7 @@ void dcm_rotate(const double m[3][3], const double v[3], double v_out[3])
   }
 }
 
+// Computes the quaternion corresponding to the input DCM.
 void dcm_to_quat(const double r[3][3], double q[4])
 {
   double trace = r[0][0] + r[1][1] + r[2][2];
@@ -112,6 +120,7 @@ void dcm_to_quat(const double r[3][3], double q[4])
   }
 }
 
+// Computes Euler angles from the input DCM using the sequence specified by `es`.
 void dcm_to_euler(const double m[3][3], double e[3], const euler_seq_t es)
 {
   switch (es)

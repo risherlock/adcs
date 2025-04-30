@@ -11,6 +11,7 @@
 #define QUAT_DIVISION_EPSILON 1e-6f
 #define EULER_SINGULARITY_EPSILON 1e-7f
 
+// Initializes input array to the unit quaternion.
 void quat_unit(double q[4])
 {
   q[0] = 1.0;
@@ -28,6 +29,7 @@ void quat_canonize(double q[4])
   }
 }
 
+// Negates all the elements of the input quaternion.
 void quat_neg(double q[4])
 {
   q[0] = -q[0];
@@ -36,6 +38,7 @@ void quat_neg(double q[4])
   q[3] = -q[3];
 }
 
+// Normalizes the input quaternion.
 void quat_normalize(double q[4])
 {
   double norm = quat_norm(q);
@@ -50,11 +53,13 @@ void quat_normalize(double q[4])
   }
 }
 
+// Computes norm of the input quaternion.
 double quat_norm(const double q[4])
 {
   return sqrt(q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3]);
 }
 
+// Computes conjugate of the input quaternion.
 void quat_conj(const double q[4], double q_conj[4])
 {
   q_conj[0] =  q[0];
@@ -63,6 +68,7 @@ void quat_conj(const double q[4], double q_conj[4])
   q_conj[3] = -q[3];
 }
 
+// Copies the contents of `q_src` to `q_dest`.
 void quat_copy(const double q_src[4], double q_dest[4])
 {
   q_dest[0] = q_src[0];
@@ -78,6 +84,7 @@ bool quat_equal(const double q1[4], const double q2[4])
   return fabs(1.0 - fabs(dot)) <= QUAT_COMPARISON_EPSILON;
 }
 
+// Computes the dot product of the input quaternions.
 double quat_dot(const double q1[4], const double q2[4])
 {
   return q1[0] * q2[0] + q1[1] * q2[1] + q1[2] * q2[2] + q1[3] * q2[3];
@@ -94,7 +101,7 @@ double quat_dist(const double q1[4], const double q2[4])
   return 2.0 * acos(fabs(qe[0]));
 }
 
-// q = q1 * q2
+// Quaternion product: q = q1 * q2
 void quat_prod(const double q1[4], const double q2[4], double q[4])
 {
   q[0] = q1[0] * q2[0] - q1[1] * q2[1] - q1[2] * q2[2] - q1[3] * q2[3];
@@ -117,6 +124,17 @@ void quat_err(const double q1[4], const double q2[4], double q[4])
   quat_prod(q1, q2_inv, q);
 }
 
+/**
+ * @brief Computes the angle-axis representation corresponding to the input quaternion, where the
+ *        rotation occurs by an angle `psi` [rad] about the unit axis vector `v`.
+ *
+ * @param q Input quaternion
+ * @param psi Rotation angle in radians
+ * @param v Unit vector representing the axis of rotation
+ *
+ * @return Status of the conversion; `true` if successful, `false` if there are infinite solutions,
+ *         in which case the axis is chosen to be [1, 0, 0]'.
+ */
 bool quat_to_axan(const double q[4], double *psi, double v[3])
 {
   bool status = true;
@@ -143,6 +161,15 @@ bool quat_to_axan(const double q[4], double *psi, double v[3])
   return status;
 }
 
+/**
+ * @brief Computes the rate of change of the quaternion using the input quaternion and angular velocity.
+ *
+ * The angular velocity vector `w` is assumed to be expressed in the body frame.
+ *
+ * @param q Input quaternion
+ * @param w Angular velocity vector in the body frame
+ * @param q_dot Output rate of change of the quaternion
+ */
 void quat_rate(const double q[4], const double w[3], double q_dot[4])
 {
   q_dot[0] = 0.5 * (-w[0] * q[1] - w[1] * q[2] - w[2] * q[3]);
@@ -151,6 +178,8 @@ void quat_rate(const double q[4], const double w[3], double q_dot[4])
   q_dot[3] = 0.5 * ( w[2] * q[0] + w[1] * q[1] - w[0] * q[2]);
 }
 
+
+// Rotates the input vector `v` using the quaternion `q` to produce the output vector `v_out`.
 void quat_rotate(const double q[4], const double v[3], double v_out[3])
 {
   double q0_sq = q[0] * q[0];
@@ -169,17 +198,18 @@ void quat_rotate(const double q[4], const double v[3], double v_out[3])
   v_out[2] = (q1q3x2 - q0q2x2) * v[0] + (q2q3x2 + q0q1x2) * v[1] + (q0_sq - q1_sq - q2_sq + q3_sq) * v[2];
 }
 
-void quat_to_dcm(const double q[4], double r[3][3])
+// Computes the DCM `m` corresponding to the input quaternion `q`.
+void quat_to_dcm(const double q[4], double m[3][3])
 {
-  r[0][0] = q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3];
-  r[0][1] = 2.0 * (q[1] * q[2] + q[0] * q[3]);
-  r[0][2] = 2.0 * (q[1] * q[3] - q[0] * q[2]);
-  r[1][0] = 2.0 * (q[1] * q[2] - q[0] * q[3]);
-  r[1][1] = q[0] * q[0] - q[1] * q[1] + q[2] * q[2] - q[3] * q[3];
-  r[1][2] = 2.0 * (q[2] * q[3] + q[0] * q[1]);
-  r[2][0] = 2.0 * (q[1] * q[3] + q[0] * q[2]);
-  r[2][1] = 2.0 * (q[2] * q[3] - q[0] * q[1]);
-  r[2][2] = q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3];
+  m[0][0] = q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3];
+  m[0][1] = 2.0 * (q[1] * q[2] + q[0] * q[3]);
+  m[0][2] = 2.0 * (q[1] * q[3] - q[0] * q[2]);
+  m[1][0] = 2.0 * (q[1] * q[2] - q[0] * q[3]);
+  m[1][1] = q[0] * q[0] - q[1] * q[1] + q[2] * q[2] - q[3] * q[3];
+  m[1][2] = 2.0 * (q[2] * q[3] + q[0] * q[1]);
+  m[2][0] = 2.0 * (q[1] * q[3] + q[0] * q[2]);
+  m[2][1] = 2.0 * (q[2] * q[3] - q[0] * q[1]);
+  m[2][2] = q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3];
 }
 
 // Quaternion to intrinsic Euler angles as described in Ref.[2].

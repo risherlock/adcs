@@ -4,6 +4,7 @@
 
 #include "euler.h"
 
+// Computes quaternion from the input Euler angles using the sequence specified by `es`.
 void euler_to_quat(const double e[3], const euler_seq_t es, double q[4])
 {
   const double c[3] = {cos(0.5 * e[0]), cos(0.5 * e[1]), cos(0.5 * e[2])};
@@ -125,6 +126,7 @@ void euler_to_quat(const double e[3], const euler_seq_t es, double q[4])
   }
 }
 
+// Computes DCM from the input Euler angles using the sequence specified by `es`.
 void euler_to_dcm(const double e[3], const euler_seq_t es, double m[3][3])
 {
   const double c[3] = {cos(e[0]), cos(e[1]), cos(e[2])};
