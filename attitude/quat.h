@@ -29,6 +29,7 @@ void quat_rate(const double q[4], const double w[3], double q_dot[4]);
 void quat_rotate(const double q[4], const double v[3], double v_out[3]);
 void quat_to_euler(const double q[4], double e[3], const euler_seq_t es);
 void quat_mean(const double *q[], const int n, const double *w, double qm[4]);
+void quat_prop(const double q[4], const double w[3], double dt, double q_out[4]);
 void quat_slerp(const double q1[4], const double q2[4], const double u, double q[4]);
 
 #ifdef __cplusplus

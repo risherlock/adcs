@@ -200,15 +200,15 @@ void quat_rotate(const double q[4], const double v[3], double v_out[3])
 // Computes the DCM corresponding to the input quaternion.
 void quat_to_dcm(const double q[4], double m[3][3])
 {
-  r[0][0] = q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3];
-  r[0][1] = 2.0 * (q[1] * q[2] + q[0] * q[3]);
-  r[0][2] = 2.0 * (q[1] * q[3] - q[0] * q[2]);
-  r[1][0] = 2.0 * (q[1] * q[2] - q[0] * q[3]);
-  r[1][1] = q[0] * q[0] - q[1] * q[1] + q[2] * q[2] - q[3] * q[3];
-  r[1][2] = 2.0 * (q[2] * q[3] + q[0] * q[1]);
-  r[2][0] = 2.0 * (q[1] * q[3] + q[0] * q[2]);
-  r[2][1] = 2.0 * (q[2] * q[3] - q[0] * q[1]);
-  r[2][2] = q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3];
+  m[0][0] = q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3];
+  m[0][1] = 2.0 * (q[1] * q[2] + q[0] * q[3]);
+  m[0][2] = 2.0 * (q[1] * q[3] - q[0] * q[2]);
+  m[1][0] = 2.0 * (q[1] * q[2] - q[0] * q[3]);
+  m[1][1] = q[0] * q[0] - q[1] * q[1] + q[2] * q[2] - q[3] * q[3];
+  m[1][2] = 2.0 * (q[2] * q[3] + q[0] * q[1]);
+  m[2][0] = 2.0 * (q[1] * q[3] + q[0] * q[2]);
+  m[2][1] = 2.0 * (q[2] * q[3] - q[0] * q[1]);
+  m[2][2] = q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3];
 }
 
 // Quaternion to intrinsic Euler angles as described in Ref.[2].
@@ -518,7 +518,7 @@ void quat_mean(const double *q[], const int n, const double *w, double qm[4])
     return;
   }
 
-  double M[4][4] = {0.0};
+  double M[4][4] = {{0.0}};
   double w_sum = 0.0;
 
   for (int i = 0; i < n; i++)
@@ -542,6 +542,51 @@ void quat_mean(const double *q[], const int n, const double *w, double qm[4])
 
   esoq2(M, w_sum, n, qm);
   quat_canonize(qm);
+}
+
+/**
+ * @brief Discrete-time propagation of quaternion kinematics.
+ *
+ * Solves the quaternion differential equation as expressed in `quat_rate()` using a discrete-time
+ * approximation.
+ *
+ * @param q      Input quaternion (unit quaternion).
+ * @param w      Angular velocity vector [rad/s].
+ * @param dt     Time step [s].
+ * @param q_out  Output quaternion after propagation.
+ *
+ * Reference:
+ *   Crassidis, Junkins - Optimal estimation of dynamic systems (2011)
+ */
+void quat_prop(const double q[4], const double w[3], double dt, double q_out[4])
+{
+  double n = sqrt(w[0] * w[0] + w[1] * w[1] + w[2] * w[2]);
+
+  if (n > QUAT_DIVISION_EPSILON)
+  {
+    double half_theta = 0.5 * n * dt;
+    double c = cos(half_theta);
+    double s = sin(half_theta) / n;
+
+    double x = w[0] * s;
+    double y = w[1] * s;
+    double z = w[2] * s;
+
+    q_out[0] =  c * q[0] + z * q[1] - y * q[2] + x * q[3];
+    q_out[1] = -z * q[0] + c * q[1] + x * q[2] + y * q[3];
+    q_out[2] =  y * q[0] - x * q[1] + c * q[2] + z * q[3];
+    q_out[3] = -x * q[0] - y * q[1] - z * q[2] + c * q[3];
+  }
+  else
+  {
+    // Assume no rotation
+    for (int i = 0; i < 4; ++i)
+    {
+      q_out[i] = q[i];
+    }
+  }
+
+  quat_normalize(q_out);
 }
 
 /**
