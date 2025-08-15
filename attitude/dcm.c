@@ -80,43 +80,30 @@ void dcm_rotate(const double m[3][3], const double v[3], double v_out[3])
 // Computes the quaternion corresponding to the input DCM.
 void dcm_to_quat(const double r[3][3], double q[4])
 {
-  double trace = r[0][0] + r[1][1] + r[2][2];
-  double s;
+  const double trace = r[0][0] + r[1][1] + r[2][2];
 
-  if (trace > 0)
+  if (trace > 0.0)
   {
-    s = 2.0 * sqrt(1.0 + trace);
-    q[0] = 0.25 * s;
-    q[1] = (r[2][1] - r[1][2]) / s;
-    q[2] = (r[0][2] - r[2][0]) / s;
-    q[3] = (r[1][0] - r[0][1]) / s;
+    const double s = 0.5 / sqrt(1.0 + trace);
+    q[0] = 0.5 / s;
+    q[1] = (r[2][1] - r[1][2]) * s;
+    q[2] = (r[0][2] - r[2][0]) * s;
+    q[3] = (r[1][0] - r[0][1]) * s;
   }
   else
   {
-    if (r[0][0] > r[1][1] && r[0][0] > r[2][2])
-    {
-      s = 2.0 * sqrt(1.0 + r[0][0] - r[1][1] - r[2][2]);
-      q[0] = (r[2][1] - r[1][2]) / s;
-      q[1] = 0.25 * s;
-      q[2] = (r[0][1] + r[1][0]) / s;
-      q[3] = (r[0][2] + r[2][0]) / s;
-    }
-    else if (r[1][1] > r[2][2])
-    {
-      s = 2.0 * sqrt(1.0 + r[1][1] - r[0][0] - r[2][2]);
-      q[0] = (r[0][2] - r[2][0]) / s;
-      q[1] = (r[0][1] + r[1][0]) / s;
-      q[2] = 0.25 * s;
-      q[3] = (r[1][2] + r[2][1]) / s;
-    }
-    else
-    {
-      s = 2.0 * sqrt(1.0 + r[2][2] - r[0][0] - r[1][1]) * 2;
-      q[0] = (r[1][0] - r[0][1]) / s;
-      q[1] = (r[0][2] + r[2][0]) / s;
-      q[2] = (r[1][2] + r[2][1]) / s;
-      q[3] = 0.25 * s;
-    }
+    int i = (r[0][0] > r[1][1]) ?
+           ((r[0][0] > r[2][2]) ? 0 : 2) :
+           ((r[1][1] > r[2][2]) ? 1 : 2);
+
+    const int j = (i + 1) % 3;
+    const int k = (i + 2) % 3;
+    const double s = 0.5 / sqrt(1.0 + r[i][i] - r[j][j] - r[k][k]);
+
+    q[i + 1] = 0.25 / s;
+    q[0] = (r[k][j] - r[j][k]) * s;
+    q[j + 1] = (r[i][j] + r[j][i]) * s;
+    q[k + 1] = (r[i][k] + r[k][i]) * s;
   }
 }
 
