@@ -36,6 +36,26 @@ void dcm_unit(double m[3][3])
   m[2][0] = 0.0; m[2][1] = 0.0; m[2][2] = 1.0;
 }
 
+/**
+ * @brief Restores the orthogonality of an almost-orthogonal DCM.
+ *
+ * @note Various sources of DCM can produce a matrix that is not perfectly orthogonal. This may
+ *       occur due to a DCM estimated from noisy vector measurements or from the accumulation of
+ *       round-off errors during numerical integration. The goal of this function is to restore
+ *       the lost orthogonality.
+ *
+ * @param m Nearly orthogonal DCM to be orthogonalized.
+ *
+ * Reference:
+ *   [1] Markley - Unit quaternion from rotation matrix (2008)
+ */
+void dcm_normalize(double m[3][3])
+{
+  double q[4];
+  dcm_to_quat(m, q);
+  quat_to_dcm(q, m);
+}
+
 // Computes transpose of input DCM/
 void dcm_trans(const double m[3][3], double t[3][3])
 {
@@ -81,36 +101,36 @@ void dcm_rotate(const double m[3][3], const double v[3], double v_out[3])
 /**
  * @brief Computes the quaternion corresponding to the input DCM.
  *
- * @param r Input DCM (can be nearly orthogonal, with small numerical errors).
+ * @param m Input DCM (can be nearly orthogonal, with small numerical errors).
  * @param q Output quaternion corresponding to the input DCM.
  *
  * Reference:
  *   [1] Markley - Unit quaternion from rotation matrix (2008)
  */
-void dcm_to_quat(const double r[3][3], double q[4])
+void dcm_to_quat(const double m[3][3], double q[4])
 {
-  const double trace = r[0][0] + r[1][1] + r[2][2];
+  const double trace = m[0][0] + m[1][1] + m[2][2];
 
   if (trace > 0.0)
   {
     q[0] = 1.0 + trace;
-    q[1] = (r[2][1] - r[1][2]);
-    q[2] = (r[0][2] - r[2][0]);
-    q[3] = (r[1][0] - r[0][1]);
+    q[1] = (m[2][1] - m[1][2]);
+    q[2] = (m[0][2] - m[2][0]);
+    q[3] = (m[1][0] - m[0][1]);
   }
   else
   {
-    int i = (r[0][0] > r[1][1]) ?
-           ((r[0][0] > r[2][2]) ? 0 : 2) :
-           ((r[1][1] > r[2][2]) ? 1 : 2);
+    int i = (m[0][0] > m[1][1]) ?
+           ((m[0][0] > m[2][2]) ? 0 : 2) :
+           ((m[1][1] > m[2][2]) ? 1 : 2);
 
     const int j = (i + 1) % 3;
     const int k = (i + 2) % 3;
 
-    q[i + 1] = 1.0 + r[i][i] - r[j][j] - r[k][k];
-    q[0] = (r[k][j] - r[j][k]);
-    q[j + 1] = (r[i][j] + r[j][i]);
-    q[k + 1] = (r[i][k] + r[k][i]);
+    q[i + 1] = 1.0 + m[i][i] - m[j][j] - m[k][k];
+    q[0] = (m[k][j] - m[j][k]);
+    q[j + 1] = (m[i][j] + m[j][i]);
+    q[k + 1] = (m[i][k] + m[k][i]);
   }
 
   quat_normalize(q);
