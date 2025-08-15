@@ -498,8 +498,7 @@ void quat_mean(const double *q[], const int n, const double *w, double qm[4])
     const double w2 = w[1];
 
     double dot12 = quat_dot(q1, q2);
-    double dot11 = quat_dot(q1, q1);
-    double z = sqrt((w1 - w2) * (w1 - w2) + 4.0 * w1 * w2 * dot11 * dot11); // Eqn.(18)
+    double z = sqrt((w1 - w2) * (w1 - w2) + 4.0 * w1 * w2 * dot12 * dot12); // Eqn.(18)
 
     // Eqn.(19)
     double temp = z * (w1 + w2 + z);
